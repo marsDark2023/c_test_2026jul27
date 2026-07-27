@@ -1,0 +1,109 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "nvmap.h"
+/**
+typedef struct{ char* name; uint32_t val; } NameVal;
+
+uint32_t  list_equal (void* a, void* b){
+    NameVal* a_val = (NameVal*) ((Node*)a) -> val;
+    NameVal* b_val = (NameVal*) ((Node*)b) -> val;
+    return strcmp( a_val->name, b_val->name ) == 0 ? 1 : 0 ;
+}
+
+void* umap_iterator( void* list, void* curr ){
+    if(!curr)
+        return ((ListNode*)list)->nodes;
+    return ((Node*)curr)->next;
+}
+void umap_append( void* list, void* node ){
+    ListNode_append( ((ListNode*) list), ((Node*) node) );
+}
+void* umap_find( void* list, void* node ){
+    Node* res = ListNode_find( (ListNode*)list, (Node*)node );
+    return (void*)res;
+}
+void* umap_remove( void* list, void* node ){
+    Node* ret = ListNode_remove( (ListNode*)list, (Node*)node );
+    return (void*)ret;
+}
+uint64_t umap_hash( void* node ){
+    char* name = ( (NameVal*)(((Node*)node)->val) )->name ;
+    uint64_t ret = 131;
+    for (uint32_t i = 0 ; name[i]; ++i)
+        ret = ret * 31 + name[i] ;
+    return ret;
+}
+UMap_Ops ops = {
+     umap_iterator, umap_append, umap_find, umap_remove, umap_hash
+};
+
+ slots 
+#define SLOTS_SIZE  65536
+ListNode listnodes[ SLOTS_SIZE ];
+**/
+int main(){
+    ListNode template = {0,0, list_equal };
+    for (uint32_t i = 0 ; i<SLOTS_SIZE; ++i)
+        listnodes[ i ] = template;
+
+    UMap map;
+    UMap_init( &map, (void*)listnodes, 
+        SLOTS_SIZE, sizeof(ListNode),  &ops); 
+    
+    NameVal nv1 = { "adam", 12 };
+    NameVal nv2 = { "ares", 32 };
+    NameVal nv3 = { "alice", 19 };
+    NameVal nv4 = { "amon", 15 };
+
+    Node n1 = { (void*)&nv1, 0 };
+    Node n2 = { (void*)&nv2, 0 };
+    Node n3 = { (void*)&nv3, 0 };
+    Node n4 = { (void*)&nv4, 0 };
+
+    printf("map insert\n");
+
+    UMap_insert( &map, (void*)&n4 );
+    UMap_insert( &map, (void*)&n1 );
+    UMap_insert( &map, (void*)&n2 );
+    UMap_insert( &map, (void*)&n3 );
+
+    printf("end\n");
+
+printf("##################################\n");
+printf( "map find\n" );
+char* targets[] = {"alice", "amon", "kerong","adam", "ares" };
+
+for ( uint32_t i = 0 ; i<5 ; ++i ){
+    printf("%d: ", i );
+    NameVal tnv1 = { targets[i] , 0};
+    Node tn1 = { &tnv1, 0 };
+    Node* tar = (Node*) UMap_find( &map, &tn1 );
+    if( !tar ){
+        printf("no found  %s \n", targets[i] );
+        continue;
+    }
+    NameVal* tn = (NameVal*)(tar->val);
+    printf( "found %s %d\n", (tn->name), (tn->val)  );
+}
+printf("end");
+printf("##################################\n");
+printf("map remove \n");
+UMap_remove( &map, (void*)&n2 );
+
+for ( uint32_t i = 0 ; i<5 ; ++i ){
+    printf("%d: ", i );
+    NameVal tnv1 = { targets[i] , 0};
+    Node tn1 = { &tnv1, 0 };
+    Node* tar = (Node*) UMap_find( &map, &tn1 );
+    if( !tar ){
+        printf("no found  %s \n", targets[i] );
+        continue;
+    }
+    NameVal* tn = (NameVal*)(tar->val);
+    printf( "found %s %d\n", (tn->name), (tn->val)  );
+}
+printf("end\n");
+
+return 0;
+}
