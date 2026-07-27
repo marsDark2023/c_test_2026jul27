@@ -76,6 +76,10 @@ space_
 insert target; tar->name and tar->val;
 **/
 uint32_t Nvmap_insert( Nvmap* this, NameVal* tar ){
+    NameVal* inserted = Nvmap_find( this, tar );
+    if( inserted )
+        return -1;
+
     uint32_t name_len = strlen(tar->name) + 1;
     uint32_t space_size = sizeof(Node) * 2 + name_len
         + sizeof(NameVal) ;
